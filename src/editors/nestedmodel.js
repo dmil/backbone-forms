@@ -16,7 +16,7 @@ Form.editors.NestedModel = Form.editors.Object.extend({
 
   render: function() {
     //Get the constructor for creating the nested form; i.e. the same constructor as used by the parent form
-    var NestedForm = this.form.constructor;
+    var NestedForm = this.schema.nestedFormClass || Form;
 
     var data = this.value || {},
         key = this.key,

@@ -511,7 +511,7 @@
 
     openEditor: function() {
       var self = this,
-          ModalForm = this.form.constructor;
+          ModalForm = this.schema.nestedFormClass || Form;
 
       var form = this.modalForm = new ModalForm({
         schema: this.nestedSchema,
