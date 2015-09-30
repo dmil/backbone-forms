@@ -96,7 +96,15 @@
         value: value,
         Editor: this.Editor,
         key: this.key
-      }).render();
+      });
+
+      item.createEditor();
+
+      item.editor.on('open', function (event) {
+        self.trigger('open', self, item.editor);
+      });
+
+      item.render();
       
       var _addItem = function() {
         self.items.push(item);
@@ -293,9 +301,9 @@
       this.form = options.form;
     },
 
-    render: function() {
-      var $ = Backbone.$;
-      
+    createEditor: function() {
+      var self = this;
+
       //Create editor
       this.editor = new this.Editor({
         key: this.key,
@@ -304,7 +312,16 @@
         list: this.list,
         item: this,
         form: this.form
-      }).render();
+      });
+
+      return this.editor;
+    },
+
+    render: function() {
+      var $ = Backbone.$;
+
+      //Create editor
+      this.editor.render();
 
       //Create main element
       var $el = $($.trim(this.template()));
