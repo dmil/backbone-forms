@@ -513,10 +513,13 @@
       var self = this,
           ModalForm = this.form.constructor;
 
-      var form = this.modalForm = new ModalForm({
-        schema: this.nestedSchema,
-        data: this.value
-      });
+      var modalFormOptions = { schema: this.nestedSchema };
+
+      if (this.value instanceof Backbone.Model) modalFormOptions.model = this.value;
+      else if (this.schema.model) modalFormOptions.model = new (this.schema.model)(this.value);
+      else modalFormOptions.data = this.value;
+
+      var form = this.modalForm = new ModalForm(modalFormOptions);
 
       var modal = this.modal = new Form.editors.List.Modal.ModalAdapter({
         content: form,
