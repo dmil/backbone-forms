@@ -28,7 +28,8 @@ Form.editors.NestedModel = Form.editors.Object.extend({
     this.nestedForm = new NestedForm({
       model: modelInstance,
       idPrefix: this.id + '_',
-      fieldTemplate: 'nestedField'
+      fieldTemplate: 'nestedField',
+      template: this.schema.nestedFormTemplate || Form.template
     });
 
     this._observeFormEvents();
