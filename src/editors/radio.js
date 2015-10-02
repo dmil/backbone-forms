@@ -30,12 +30,12 @@ Form.editors.Radio = Form.editors.Select.extend({
   },
 
   /**
-   * Returns the template. Override for custom templates
+   * Returns the template.
    *
    * @return {Function}       Compiled template
    */
   getTemplate: function() {
-    return this.schema.template || this.constructor.template;
+    return this.constructor.template;
   },
 
   getValue: function() {
