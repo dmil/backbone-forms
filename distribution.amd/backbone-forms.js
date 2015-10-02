@@ -1351,6 +1351,7 @@ Form.editors.Text = Form.Editor.extend({
    * @param {String}
    */
   setValue: function(value) {
+    this.value = value;
     this.$el.val(value);
   },
 
@@ -1478,7 +1479,7 @@ Form.editors.Number = Form.editors.Text.extend({
     })();
 
     if (_.isNaN(value)) value = null;
-
+    this.value = value;
     Form.editors.Text.prototype.setValue.call(this, value);
   }
 
@@ -1557,6 +1558,7 @@ Form.editors.Checkbox = Form.editors.Base.extend({
     }else{
       this.$el.prop('checked', false);
     }
+    this.value = !!value;
   },
 
   focus: function() {
@@ -1725,6 +1727,7 @@ Form.editors.Select = Form.editors.Base.extend({
   },
 
   setValue: function(value) {
+    this.value = value;
     this.$el.val(value);
   },
 
@@ -1786,7 +1789,7 @@ Form.editors.Select = Form.editors.Base.extend({
    * @return {String} HTML
    */
   _arrayToHtml: function(array) {
-    var html = $();
+    var html = [];
 
     //Generate HTML
     _.each(array, function(option) {
@@ -1795,14 +1798,14 @@ Form.editors.Select = Form.editors.Base.extend({
           var optgroup = $("<optgroup>")
             .attr("label",option.group)
             .html( this._getOptionsHtml(option.options) );
-          html = html.add(optgroup);
+          html.push(optgroup);
         } else {
           var val = (option.val || option.val === 0) ? option.val : '';
-          html = html.add( $('<option>').val(val).text(option.label) );
+          html.push( $('<option>').val(val).text(option.label) );
         }
       }
       else {
-        html = html.add( $('<option>').text(option) );
+        html.push( $('<option>').text(option) );
       }
     }, this);
 
@@ -1843,12 +1846,12 @@ Form.editors.Radio = Form.editors.Select.extend({
   },
 
   /**
-   * Returns the template. Override for custom templates
+   * Returns the template.
    *
    * @return {Function}       Compiled template
    */
   getTemplate: function() {
-    return this.schema.template || this.constructor.template;
+    return this.constructor.template;
   },
 
   getValue: function() {
@@ -1856,6 +1859,7 @@ Form.editors.Radio = Form.editors.Select.extend({
   },
 
   setValue: function(value) {
+    this.value = value;
     this.$('input[type=radio]').val([value]);
   },
 
@@ -1968,6 +1972,7 @@ Form.editors.Checkboxes = Form.editors.Select.extend({
 
   setValue: function(values) {
     if (!_.isArray(values)) values = [values];
+    this.value = values;
     this.$('input[type=checkbox]').val(values);
   },
 
@@ -2054,7 +2059,7 @@ Form.editors.Object = Form.editors.Base.extend({
 
   render: function() {
     //Get the constructor for creating the nested form; i.e. the same constructor as used by the parent form
-    var NestedForm = this.form.constructor;
+    var NestedForm = this.schema.nestedFormClass || Form;
 
     //Create the nested form
     this.nestedForm = new NestedForm({
@@ -2144,7 +2149,7 @@ Form.editors.NestedModel = Form.editors.Object.extend({
 
   render: function() {
     //Get the constructor for creating the nested form; i.e. the same constructor as used by the parent form
-    var NestedForm = this.form.constructor;
+    var NestedForm = this.schema.nestedFormClass || Form;
 
     var data = this.value || {},
         key = this.key,
@@ -2156,7 +2161,8 @@ Form.editors.NestedModel = Form.editors.Object.extend({
     this.nestedForm = new NestedForm({
       model: modelInstance,
       idPrefix: this.id + '_',
-      fieldTemplate: 'nestedField'
+      fieldTemplate: 'nestedField',
+      template: this.schema.nestedFormTemplate || Form.template
     });
 
     this._observeFormEvents();
@@ -2328,6 +2334,7 @@ Form.editors.Date = Form.editors.Base.extend({
    * @param {Date} date
    */
   setValue: function(date) {
+    this.value = date;
     this.$date.val(date.getDate());
     this.$month.val(date.getMonth());
     this.$year.val(date.getFullYear());
@@ -2495,7 +2502,7 @@ Form.editors.DateTime = Form.editors.Base.extend({
    */
   setValue: function(date) {
     if (!_.isDate(date)) date = new Date(date);
-
+    this.value = date;
     this.dateEditor.setValue(date);
 
     this.$hour.val(date.getHours());

@@ -62,9 +62,14 @@ define(['jquery', 'underscore', 'backbone', 'backbone-forms'], function($, _, Ba
 
       //Add existing items
       if (value.length) {
-        _.each(value, function(itemValue) {
-          self.addItem(itemValue);
-        });
+        if (value instanceof Backbone.Collection)
+          value.each(function(itemValue) {
+            self.addItem(itemValue);
+          });
+        else
+          _.each(value, function(itemValue) {
+            self.addItem(itemValue);
+          });
       }
 
       //If no existing items create an empty one, unless the editor specifies otherwise
@@ -98,7 +103,15 @@ define(['jquery', 'underscore', 'backbone', 'backbone-forms'], function($, _, Ba
         value: value,
         Editor: this.Editor,
         key: this.key
-      }).render();
+      });
+
+      item.createEditor();
+
+      item.editor.on('open', function (event) {
+        self.trigger('open', self, item.editor);
+      });
+
+      item.render();
       
       var _addItem = function() {
         self.items.push(item);
@@ -295,9 +308,9 @@ define(['jquery', 'underscore', 'backbone', 'backbone-forms'], function($, _, Ba
       this.form = options.form;
     },
 
-    render: function() {
-      var $ = Backbone.$;
-      
+    createEditor: function() {
+      var self = this;
+
       //Create editor
       this.editor = new this.Editor({
         key: this.key,
@@ -306,7 +319,16 @@ define(['jquery', 'underscore', 'backbone', 'backbone-forms'], function($, _, Ba
         list: this.list,
         item: this,
         form: this.form
-      }).render();
+      });
+
+      return this.editor;
+    },
+
+    render: function() {
+      var $ = Backbone.$;
+
+      //Create editor
+      this.editor.render();
 
       //Create main element
       var $el = $($.trim(this.template()));
@@ -506,6 +528,8 @@ define(['jquery', 'underscore', 'backbone', 'backbone-forms'], function($, _, Ba
 
       //If there's a specified toString use that
       if (schema.itemToString) return schema.itemToString(value);
+
+      if (value instanceof Backbone.Model) return value.toString();
       
       //Otherwise use the generic method or custom overridden method
       return this.itemToString(value);
@@ -513,12 +537,15 @@ define(['jquery', 'underscore', 'backbone', 'backbone-forms'], function($, _, Ba
 
     openEditor: function() {
       var self = this,
-          ModalForm = this.form.constructor;
+          ModalForm = this.schema.nestedFormClass || Form;
 
-      var form = this.modalForm = new ModalForm({
-        schema: this.nestedSchema,
-        data: this.value
-      });
+      var modalFormOptions = { schema: this.nestedSchema };
+
+      if (this.value instanceof Backbone.Model) modalFormOptions.model = this.value;
+      else if (this.schema.model) modalFormOptions.model = new (this.schema.model)(this.value);
+      else modalFormOptions.data = this.value;
+
+      var form = this.modalForm = new ModalForm(modalFormOptions);
 
       var modal = this.modal = new Form.editors.List.Modal.ModalAdapter({
         content: form,
@@ -646,6 +673,8 @@ define(['jquery', 'underscore', 'backbone', 'backbone-forms'], function($, _, Ba
 
       //If there's a specified toString use that
       if (schema.itemToString) return schema.itemToString(value);
+
+      if (value instanceof Backbone.Model) return value.toString();
       
       //Otherwise use the model
       return new (schema.model)(value).toString();
