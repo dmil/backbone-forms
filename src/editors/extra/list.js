@@ -60,9 +60,14 @@
 
       //Add existing items
       if (value.length) {
-        _.each(value, function(itemValue) {
-          self.addItem(itemValue);
-        });
+        if (value instanceof Backbone.Collection)
+          value.each(function(itemValue) {
+            self.addItem(itemValue);
+          });
+        else
+          _.each(value, function(itemValue) {
+            self.addItem(itemValue);
+          });
       }
 
       //If no existing items create an empty one, unless the editor specifies otherwise
@@ -504,6 +509,8 @@
 
       //If there's a specified toString use that
       if (schema.itemToString) return schema.itemToString(value);
+
+      if (value instanceof Backbone.Model) return value.toString();
       
       //Otherwise use the generic method or custom overridden method
       return this.itemToString(value);
@@ -644,6 +651,8 @@
 
       //If there's a specified toString use that
       if (schema.itemToString) return schema.itemToString(value);
+
+      if (value instanceof Backbone.Model) return value.toString();
       
       //Otherwise use the model
       return new (schema.model)(value).toString();
